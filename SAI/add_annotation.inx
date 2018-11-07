@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+    <_name>Add Annotation</_name>
+    <id>org.inkscape.add_annotation</id>
+    <dependency type="executable" location="extensions">add_annotation_main.py</dependency>
+    <dependency type="executable" location="extensions">inkex.py</dependency>
+    <effect needs-live-preview="false">
+         <effects-menu>
+            <submenu _name="Semantic"/>
+        </effects-menu>
+    </effect>
+    <script>
+        <command reldir="extensions" interpreter="python">add_annotation_main.py</command>
+    </script>
+</inkscape-extension>

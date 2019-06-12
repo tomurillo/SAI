@@ -16,7 +16,8 @@ class SVGParser:
 
     def __init__(self, svgRoot):
         self.svgRoot = svgRoot
-        self.dict = {}
+        self.dict = {}  # Element coordinate dictionary
+        self.att_dict = {}  # Other element attributes
 
     def findCenters(self):
         """ This is the main method for detecting centers of SVG elements.
@@ -34,10 +35,9 @@ class SVGParser:
                                               namespaces=inkex.NSS))
 
     def addRectCenter(self, elList):
-        """ Searches the central point of all rect SVG elements. Coordinates
+        """ Searches the central point and other attributes of all rect SVG elements. Coordinates
             are added to the dictionary using elements id as the key.
-        :param elList: List of rect elements to whom the coordinates are
-            counted
+        :param elList: List of rect elements to whom the coordinates are counted
         """
 
         for rect in elList:
@@ -60,6 +60,9 @@ class SVGParser:
                     x = cx_orig
                     y = cy_orig    
                 self.dict[rect.attrib["id"]] = (str(x), str(y))
+                self.att_dict[rect.attrib["id"]] = {}
+                self.att_dict[rect.attrib["id"]]['height'] = str(rect.attrib["height"])
+                self.att_dict[rect.attrib["id"]]['width'] = str(rect.attrib["width"])
 
     def addEllipseCenter(self, elList):
         """ Searches the central point of all ellipse SVG elements. Coordinates
@@ -213,8 +216,41 @@ class SVGParser:
             roundX = round((minX + maxX) / 2, 3)
             roundY = round((minY + maxY) / 2, 3)
             return (str(roundX), str(roundY))
-        
-        
+
+    def computeDimForListOfElements(self, eList):
+        """
+        Computes the total length and width of rectangles or annotations made up of rectangles
+        :param eList: List of elements
+        :return: (height, width); dimensions for the annotation made up of the given elements
+        """
+        c_max_y, c_max_x = -sys.float_info.max, -sys.float_info.max
+        c_min_y, c_min_x = sys.float_info.max, sys.float_info.max
+        min_len, min_width, max_len, max_width = (0.0,)*4
+        n_found = 0
+        for element in eList:
+            if element in self.att_dict:
+                if float(self.dict[element][0]) < c_min_x and 'width' in self.att_dict[element]:
+                    c_min_x = float(self.dict[element][0])
+                    min_width = self.att_dict[element]['width']
+                    n_found += 1
+                if float(self.dict[element][1]) < c_min_y and 'height' in self.att_dict[element]:
+                    c_min_y = float(self.dict[element][1])
+                    min_len = self.att_dict[element]['height']
+                    n_found += 1
+                if float(self.dict[element][0]) > c_max_x and 'width' in self.att_dict[element]:
+                    c_max_x = float(self.dict[element][0])
+                    max_width = self.att_dict[element]['width']
+                    n_found += 1
+                if float(self.dict[element][1]) > c_max_y and 'height' in self.att_dict[element]:
+                    max_len = self.att_dict[element]['height']
+                    n_found += 1
+                    c_max_y = float(self.dict[element][1])
+        h, w = None, None
+        if n_found >= 4:
+            h = (float(max_len) / 2.0) + (float(min_len) / 2.0) + abs(c_max_y - c_min_y)
+            w = (float(max_width) / 2.0) + (float(min_width) / 2.0) + abs(c_max_x - c_min_x)
+        return str(h), str(w)
+
     def __calculateTransformedCoordinates(self, origX, origY, transform):
         """Calculate the final coordinates of an element given its original
         coordinates and a transform matrix.

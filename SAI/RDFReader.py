@@ -249,6 +249,25 @@ class RDFReader(object):
         if not (subjectURI, propertyURI, objectURI) in self.graph:
             self.graph.add((subjectURI, propertyURI, objectURI))
 
+
+    def addLengthAndWidth(self, instanceName, length, width):
+        """
+        Adds has_length and has_width properties to the given instance (annotation)
+        :param instanceName: string; name of instance in the ontology
+        :param length: float; value of the has_length property for the instance
+        :param width: float; value of the has_width property for the instance
+        :return:
+        """
+        instanceURI = URIRef("%s#%s" % (self.namespace, instanceName))
+        dataPropertyURI = URIRef("%s#%s" % (self.namespace, c.HAS_LENGTH_PR))
+        dataPropertyValueURI = rdflib.term.Literal(length)
+        self.graph.remove((instanceURI, dataPropertyURI, None))
+        self.graph.add((instanceURI, dataPropertyURI, dataPropertyValueURI))
+        dataPropertyURI = URIRef("%s#%s" % (self.namespace, c.HAS_WIDTH_PR))
+        dataPropertyValueURI = rdflib.term.Literal(width)
+        self.graph.remove((instanceURI, dataPropertyURI, None))
+        self.graph.add((instanceURI, dataPropertyURI, dataPropertyValueURI))
+
     def removeObjectProperty(self, subj, property, obj):
         """ Removes an instance of an object property to the ontology.
         :param subj:

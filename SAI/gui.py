@@ -585,8 +585,8 @@ class PickerGUI():
                                                               property, obj])
 
     def savingOperations(self, reader):
-        """ Method performs the operations for correct saving of data into
-            .rdf file.
+        """
+        Save current data into an .rdf file.
         :param reader: Instance of the reader class.
         """
 
@@ -623,6 +623,10 @@ class PickerGUI():
                     cPnt = svg.countCentralPointForListOfElements(svgElements)
                     if cPnt is not None:
                         reader.addCoordinatesXY(annotation, cPnt[0], cPnt[1])
+
+                    h, w = svg.computeDimForListOfElements(svgElements)
+                    if h is not None:
+                        reader.addLengthAndWidth(annotation, h, w)
 
                     for svgElement in svgElements:
                         reader.addSVGElementProperty(annotation, svgElement)

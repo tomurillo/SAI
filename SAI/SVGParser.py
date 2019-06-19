@@ -49,6 +49,7 @@ class SVGParser:
                 y_orig = float(rect.attrib["y"])
                 cx_orig = (x_orig + (x_orig + float(rect.attrib["width"]))) / 2
                 cy_orig = (y_orig + (y_orig + float(rect.attrib["height"]))) / 2
+                transformed = False
                 if "transform" in rect.attrib:
                     transVector = self.__transformStringToVector(
                                                      rect.attrib["transform"])
@@ -56,7 +57,9 @@ class SVGParser:
                                                             cx_orig, 
                                                             cy_orig, 
                                                             transVector)
-                else:
+                    if x is not None and y is not None:
+                        transformed = True
+                if not transformed:
                     x = cx_orig
                     y = cy_orig    
                 self.dict[rect.attrib["id"]] = (str(x), str(y))
@@ -76,7 +79,7 @@ class SVGParser:
                 
                 x_orig = ell.attrib["cx"]
                 y_orig = ell.attrib["cy"]
-                
+                transformed = False
                 if "transform" in ell.attrib:
                     transVector = self.__transformStringToVector(
                                                      ell.attrib["transform"])
@@ -84,7 +87,9 @@ class SVGParser:
                                                             x_orig, 
                                                             y_orig, 
                                                             transVector)
-                else:
+                    if x is not None and y is not None:
+                        transformed = True
+                if not transformed:
                     x = x_orig
                     y = y_orig
                                 
@@ -103,7 +108,7 @@ class SVGParser:
                 
                 x_orig = path.attrib["{" + const.SODI_NS + "}cx"]
                 y_orig = path.attrib["{" + const.SODI_NS + "}cy"]
-                
+                transformed = False
                 if "transform" in path.attrib:
                     transVector = self.__transformStringToVector(
                                                      path.attrib["transform"])
@@ -111,7 +116,9 @@ class SVGParser:
                                                             x_orig, 
                                                             y_orig, 
                                                             transVector)
-                else:
+                    if x is not None and y is not None:
+                        transformed = True
+                if not transformed:
                     x = x_orig
                     y = y_orig
                     
@@ -154,7 +161,7 @@ class SVGParser:
         for text in elList:
             if (text is not None and "id" in text.attrib and "x" in text.attrib
                     and "y" in text.attrib):
-                
+                transformed = False
                 if "transform" in text.attrib:
                     transVector = self.__transformStringToVector(
                                                      text.attrib["transform"])
@@ -162,7 +169,9 @@ class SVGParser:
                                                             text.attrib["x"], 
                                                             text.attrib["y"], 
                                                             transVector)
-                else:
+                    if x is not None and y is not None:
+                        transformed = True
+                if not transformed:
                     x = text.attrib["x"]
                     y = text.attrib["y"]
                     
@@ -261,28 +270,31 @@ class SVGParser:
         :return: A (x, y) pair containing the final coordinates of 
         the element
         """
-        a = transform[0]
-        b = transform[1]
-        c = transform[2]
-        d = transform[3]
-        e = transform[4]
-        f = transform[5]
-        """
-        Transformation Matrix:
-                      [ a c e ]
-        transMatrix = [ b d f ]
-                      [ 0 0 1 ]
-        """
-        transMatrix = [[a, c, e], [b, d, f], [0.0, 0.0, 1.0]]
-        """
-        [ Xfinal ]                  [ Xoriginal ]
-        [ Yfinal ] = transMatrix *  [ Yoriginal ]
-        [   1    ]                  [     1     ] 
-        """
-        coorVector = self.__matmult(transMatrix, [[float(origX)], 
-                                                  [float(origY)],
-                                                  [1.0]])
-        return (coorVector[0][0], coorVector[1][0])
+        if len(transform) >= 6:
+            a = transform[0]
+            b = transform[1]
+            c = transform[2]
+            d = transform[3]
+            e = transform[4]
+            f = transform[5]
+            """
+            Transformation Matrix:
+                          [ a c e ]
+            transMatrix = [ b d f ]
+                          [ 0 0 1 ]
+            """
+            transMatrix = [[a, c, e], [b, d, f], [0.0, 0.0, 1.0]]
+            """
+            [ Xfinal ]                  [ Xoriginal ]
+            [ Yfinal ] = transMatrix *  [ Yoriginal ]
+            [   1    ]                  [     1     ] 
+            """
+            coorVector = self.__matmult(transMatrix, [[float(origX)],
+                                                      [float(origY)],
+                                                      [1.0]])
+            return coorVector[0][0], coorVector[1][0]
+        else:
+            return None, None
     
     def __transformStringToVector(self, transformAttribute):
         """Converts the textual value of a transform attribute to an array

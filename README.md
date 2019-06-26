@@ -3,7 +3,7 @@ SAI (Semantic Annotator for Inkscape) is an Inkscape extension that lets authors
 
 ![SAI screenshot](resources/SAI-screenshot.png)
 
-Read our [CSUN paper](http://scholarworks.csun.edu/handle/10211.3/203010) for more information.
+For further information, read our [paper](resources/SAI-paper-CSUN18.pdf) (published on the [Journal on Technology & Persons with Disabilities, Volume 6](http://scholarworks.csun.edu/handle/10211.3/203010)).
 
 ## Install
 
